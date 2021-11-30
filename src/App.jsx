@@ -5,20 +5,31 @@ import WeatherForCity from './WeatherForCity'
 
 function App() {
 
+  const menuClass = " align-middle hover:underline "
+
   return (
     <div>
-      <header className={"flex justify-center"}>
-        <h1 className={"font-light text-xl tracking-widest align-middle"}>jamie weather</h1>
-        <p className={"text-xl tracking-widest align-middle"}>username</p>
-        <p className={"align-middle"}>hamburger menu</p>
+      <header className={"sticky top-0 z-50 p-1 mb-2 bg-blue-900 bg-opacity-90 shadow-2xl text-white text-xl"}>
+        <ul className={"flex justify-evenly"}>
+          <li>
+            <a href="#" className={"tracking-widest" + menuClass}>username</a>
+          </li>
+          <li>
+            <a href="#" className={"font-light tracking-widest" + menuClass}>jamie weather</a>
+          </li>
+          <li>
+            <a href="#" className={"align-middle" + menuClass}>☰</a> 
+          </li>
+        </ul>
       </header>
 
-      <section>
+      <section className={"realtive flex flex-col m-20"}>
         <WeatherForCity></WeatherForCity>
         <WeatherForCity></WeatherForCity>
         <WeatherForCity></WeatherForCity>
-        <button>Add City</button>
       </section>
+
+      <button className={"sticky bottom-5 left-5 z-50 px-2 py-1 bg-blue-900 bg-opacity-90 hover:bg-opacity-100 font-extrabold rounded-lg shadow-xl text-white text-3xl"}>+</button>
 
     </div>
   )
