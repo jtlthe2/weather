@@ -8,13 +8,18 @@ function App() {
   return (
     <div>
       <header className={"flex justify-center"}>
-        <h1>jamie weather</h1>
-        <p>username</p>
-        <p>hamburger menu</p>
+        <h1 className={"font-light text-xl tracking-widest align-middle"}>jamie weather</h1>
+        <p className={"text-xl tracking-widest align-middle"}>username</p>
+        <p className={"align-middle"}>hamburger menu</p>
       </header>
-      <WeatherForCity></WeatherForCity>
-      <WeatherForCity></WeatherForCity>
-      <WeatherForCity></WeatherForCity>
+
+      <section>
+        <WeatherForCity></WeatherForCity>
+        <WeatherForCity></WeatherForCity>
+        <WeatherForCity></WeatherForCity>
+        <button>Add City</button>
+      </section>
+
     </div>
   )
 }
