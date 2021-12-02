@@ -67,9 +67,9 @@ export default function WeatherForCity() {
     console.log(fakeData.weather)
     console.log(weatherConditionSections);
     return (
-        <div className={"h-screen grid grid-cols-2 md:grid-cols-4 gap-3"}>
+        <div className={"h-screen grid grid-cols-2 md:grid-cols-4 gap-3 justify-items-stretch"}>
 
-            <h3 className={"col-span-2 md:col-span-4 text-3xl tracking-widest underline font-extrabold font-serif"}>{fakeData.name}</h3>
+            <h3 className={"col-span-full  p-10 bg-black text-white text-3xl tracking-widest font-extrabold font-serif"}>{fakeData.name}</h3>
 
             <section>
               <img 
