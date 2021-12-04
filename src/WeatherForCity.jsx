@@ -1,75 +1,26 @@
 import React from 'react'
 import WeatherCondition from './WeatherCondition'
 
-export default function WeatherForCity() {
-    const fakeData = {
-      "coord": {
-        "lon": -122.08,
-        "lat": 37.39
-      },
-      "weather": [
-        {
-          "id": 800,
-          "main": "Clear",
-          "description": "clear sky",
-          "icon": "01d"
-        },
-        {
-          "id": 800,
-          "main": "Clear",
-          "description": "clear sky",
-          "icon": "01d"
-        },
-        {
-          "id": 800,
-          "main": "Clear",
-          "description": "clear sky",
-          "icon": "01d"
-        }
-      ],
-      "base": "stations",
-      "main": {
-        "temp": 282.55,
-        "feels_like": 281.86,
-        "temp_min": 280.37,
-        "temp_max": 284.26,
-        "pressure": 1023,
-        "humidity": 100
-      },
-      "visibility": 16093,
-      "wind": {
-        "speed": 1.5,
-        "deg": 350
-      },
-      "clouds": {
-        "all": 1
-      },
-      "dt": 1560350645,
-      "sys": {
-        "type": 1,
-        "id": 5122,
-        "message": 0.0139,
-        "country": "US",
-        "sunrise": 1560343627,
-        "sunset": 1560396563
-      },
-      "timezone": -25200,
-      "id": 420006353,
-      "name": "Mountain View",
-      "cod": 200
-    }   
+export default function WeatherForCity(props) {
+
+    const fakeData = props.cityData.current;
     
     const weatherConditionSections = fakeData.weather.map( (wC) => 
         <section>
           <WeatherCondition weatherCondition={wC}></WeatherCondition>
         </section>
     );
-    console.log(fakeData.weather)
-    console.log(weatherConditionSections);
+
+
+
     return (
         <div className={"h-screen grid grid-cols-2 md:grid-cols-4 gap-3 justify-items-stretch"}>
 
-            <h3 className={"col-span-full  p-10 bg-black text-white text-3xl tracking-widest font-extrabold font-serif"}>{fakeData.name}</h3>
+            <h3 className={"col-span-full  p-10 bg-black text-white text-3xl tracking-widest font-extrabold font-serif"}>Current Location</h3>
+            {/* <svg width={"100%"} viewBox={"0 0 170 20"} className={"col-span-full"}>
+              <rect width="170" height="20"></rect>
+              <text x="2" y="15" fill={"#ffffff"} className={"tracking-widest font-extrabold font-serif"}>{fakeData.name} aaaa</text>
+            </svg> */}
 
             <section>
               <img 
@@ -78,23 +29,23 @@ export default function WeatherForCity() {
             </section>
 
             <section className={"text-xl"}>
-                <div className={"font-extrabold"}>Temp: {fakeData.main.temp}°</div>
-                <div className={"font-extralight"}>Feels like {fakeData.main.feels_like}° and there's {fakeData.main.humidity}% humidity.</div>
+                <div className={"font-extrabold"}>Temp: {fakeData.temp}°</div>
+                <div className={"font-extralight"}>Feels like {fakeData.feels_like}° and there's {fakeData.humidity}% humidity.</div>
                 <div className={"md:flex"}>
-                  <div>Low: {fakeData.main.temp_min}° </div>
+                  {/* <div>Low: {fakeData.main.temp_min}° </div>
                   <div></div>
-                  <div>High: {fakeData.main.temp_max}°</div>
+                  <div>High: {fakeData.main.temp_max}°</div> */}
                 </div>
             </section>
 
             <section className={"text-lg"}>
-                <div>Sunrise: {fakeData.sys.sunrise}</div>
-                <div>Sunset: {fakeData.sys.sunset}</div>
+                <div>Sunrise: {fakeData.sunrise}</div>
+                <div>Sunset: {fakeData.sunset}</div>
             </section>
 
             <section>
-                <p>Wind Speed: {fakeData.wind.speed}</p>
-                <p>{fakeData.clouds.all}% cloudy.</p>
+                <p>Wind Speed: {fakeData.wind_speed}</p>
+                <p>{fakeData.clouds}% cloudy.</p>
             </section>
 
             {weatherConditionSections}
