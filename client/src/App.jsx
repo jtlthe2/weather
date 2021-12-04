@@ -48,6 +48,13 @@ function App() {
       console.log("no avail");
       showAddLocation();
     }
+
+    console.log("trying");
+    axios("https://172.31.249.65:8020/weather").then(res => {
+      console.log("cool", res);
+    }).catch(err => {
+      console.log("uncool", err)
+    })
   }, [])
 
   useEffect( () => {
