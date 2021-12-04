@@ -32,4 +32,24 @@ app.get('/weather', (req, res) => {
     res.json('seltzer weathers');
 })
 
+app.get('/weather-for-locations', (req, res) => {
+    const locationList = [{lon: "-94.04", lat: "33.44"}, {lon: "-94.04", lat: "33.44"}, {lon: "-94.04", lat: "33.44"}];
+    const units = "imperial";
+    let promises = [];
+    let citiesData = [];
+    locationList.forEach(loc => {
+      promises.push(
+        axios("https://api.openweathermap.org/data/2.5/onecall?units=" + units + "&lat=" + loc.lat + "&lon=" + loc.lon + "&exclude=hourly,minutely,daily&appid=" + weatherApiKey).then( weatherRes => {
+          console.log("response", weatherRes);
+          if(citiesData.length > 0) { citiesData = [...citiesData, weatherRes.data];}
+          else { citiesData = [weatherRes.data];}
+          
+        }).catch( weatherError => {
+          console.error("Error getting city data: ", weatherError);
+        })
+      );
+    });
+    Promise.all(promises).then(() => {console.log("done!"); res.json(citiesData);});
+})
+
 server.listen(PORT, () => { console.log('listening on ', PORT) });
