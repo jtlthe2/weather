@@ -5,13 +5,13 @@ import WeatherForCity from './WeatherForCity'
 import Modal, {ModalHeader, ModalBody, ModalFooter} from './Modal'
 
 function App() {
+  const [currentLocation, setCurrentLocation] = useState();
   const [citiesData, setCitiesData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [show, setShow] = useState(false);
 
   const [locationList, setLocationList] = useState([]);
-  const [units, setUnits] = useState("imperial")
 
   function addLocationToList(location) {
     if(citiesData.length > 0) {
@@ -35,10 +35,15 @@ function App() {
 
   useEffect( () => {
     if("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        console.log("Latitude is :", position.coords.latitude);
-        console.log("Longitude is :", position.coords.longitude);
-        addLocationToList({lon: position.coords.longitude, lat: position.coords.latitude});
+      navigator.geolocation.getCurrentPosition(position => {
+        axios(`https://localhost:8020/weather-for-current-location?username=jtlthe2&lat=${position.coords.latitude}&lon=${position.coords.longitude}`)
+        .then(res => {
+          console.log("response", res.data);
+          setCurrentLocation(res.data);
+        })
+        .catch(err => {
+          console.error("Error getting current location data: ", err);
+        })
       }, function(error) {
         console.log("rejected", error);
         showAddLocation();
@@ -48,39 +53,28 @@ function App() {
       console.log("no avail");
       showAddLocation();
     }
-
-    console.log("trying");
-    axios("https://172.31.249.65:8020/weather").then(res => {
-      console.log("cool", res);
-    }).catch(err => {
-      console.log("uncool", err)
-    })
   }, [])
 
   useEffect( () => {
-    let promises = [];
-    locationList.forEach(loc => {
-      promises.push(
-        axios("https://api.openweathermap.org/data/2.5/onecall?units=" + units + "&lat=" + loc.lat + "&lon=" + loc.lon + "&exclude=hourly,minutely,daily&appid=APIKEYJAMIE").then( res => {
-          console.log("response", res);
-          if(citiesData.length > 0) {setCitiesData([...citiesData, res.data]);}
-          else { 
-          setCitiesData([res.data]);}
-          
-        }).catch( err => {
-          console.error("Error getting city data: ", err);
-        })
-      );
-    });
-    Promise.all(promises).then(() => {console.log("done!"); setLoading(false)});
-  }, [locationList, units]);
+    axios("https://localhost:8020/weather-for-locations?username=jtlthe2")
+    .then(res => {
+      console.log("response", res.data);
+      setCitiesData(res.data);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error("Error getting city data: ", err);
+    })
+  }, [locationList]);
 
   const menuClass = " align-middle hover:underline "
 
   console.log("Loading ", loading, citiesData);
 
-  const weatherForCity = !loading ? citiesData.map( cD =>
-    <WeatherForCity cityData={cD}></WeatherForCity>
+  const weatherForCurrentLocation = currentLocation ? <WeatherForCity key={currentLocation.name.id} cityData={currentLocation}></WeatherForCity> : null;
+
+  const weatherForCities = !loading ? citiesData.map( cD =>
+    <WeatherForCity key={cD.name.id} cityData={cD}></WeatherForCity>
   ) : null;
 
   if(loading) return <div>loading</div>
@@ -102,7 +96,8 @@ function App() {
       </header>
 
       <section className={"realtive flex flex-col m-20"}>
-        {weatherForCity}
+        {weatherForCurrentLocation}
+        {weatherForCities}
       </section>
 
       <button className={"sticky bottom-5 left-5 z-30 h-20 w-20 bg-blue-900 transition-all transform duration-500 ease-in-out bg-opacity-90 hover:bg-opacity-100 hover:scale-125 rounded-full font-extrabold shadow-xl text-white text-4xl text-center"} onClick={() => showAddLocation()}>+</button>

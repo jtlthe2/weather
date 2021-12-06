@@ -2,26 +2,31 @@ const PORT = 8020;
 const https = require('https');
 const express = require('express');
 const cors = require('cors');
+const pgp = require('pg-promise')();
 const axios = require('axios');
-const path = require('path');
 const fs = require('fs');
 
 require('dotenv').config();
 
 
-const weatherApiKey = process.env.OPEN_WEATHER_API_KEY;
-const key = fs.readFileSync('./key.pem');
-const cert = fs.readFileSync('./cert.pem');
-// const citiesJsonFile = fs.readFile('./city.list.json');
+const OPEN_WEATHER_API_KEY = process.env.OPEN_WEATHER_API_KEY;
+const DB_USER = process.env.DB_USER;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+const DB_NAME = process.env.DB_NAME;
+const DB_PORT = process.env.DB_PORT;
+const DB_HOST = process.env.DB_HOST;
+const KEY = fs.readFileSync('./key.pem');
+const CERT = fs.readFileSync('./cert.pem');
 
 
 const app = express();
+const db = pgp(`postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`);
 
 app.use(cors({
     origin: 'https://localhost:3000'
 }));
 
-const server = https.createServer({key: key, cert: cert }, app);
+const server = https.createServer({key: KEY, cert: CERT }, app);
 
 app.get('/', (req, res) => {
     console.log(req);
@@ -41,38 +46,61 @@ app.get('/', (req, res) => {
 
 app.get('/search-for-location', (req, res) => {
     const query = req.query.q;
-    axios("https://api.openweathermap.org/geo/1.0/direct?q=" + query + "&limit=10&appid=" + weatherApiKey).then(response => {
-        console.log("geo response", response);
+    axios(`https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=10&appid=${OPEN_WEATHER_API_KEY}`).then(response => {
+        console.log('geo response', response);
         res.json(response.data);
     }).catch( error => {
-        console.error("Error getting city data: ", error);
+        console.error('Error getting geo data: ', error);
     });
 });
 
 // TODO weather for location (to query weather data for current location)
+app.get('/weather-for-current-location', (req, res) => {
+  // TODO get users weather units.
+  // const username = req.query.username;
+  const units = 'imperial';
+  console.log(req.query);
+  axios(`https://api.openweathermap.org/data/2.5/onecall?units=${units}&lat=${req.query.lat}&lon=${req.query.lon}&exclude=hourly,minutely,daily&appid=${OPEN_WEATHER_API_KEY}`).then( response => {
+    const currentLocationData = {
+      name: {
+        id: 'current_location',
+        lat: req.query.lat,
+        location_name: "Current Location",
+        lon: req.query.lon,
+        weather_units: units
+      }, 
+      weather: response.data
+    }
+    res.json(currentLocationData);
+    }).catch( error => {
+      console.error('Error getting city data: ', error);
+    })
+})
 
 app.get('/weather-for-locations', (req, res) => {
-    // const userId = req.query.userId;
-    // TODO Get users location list
-    // TODO Get users units
+    const username = req.query.username;
+
     // TODO incorporate name into this.
-    const locationList = [{lon: "-94.04", lat: "33.44"}, {lon: "-94.04", lat: "33.44"}, {lon: "-94.04", lat: "33.44"}];
-    const units = "imperial";
-    let promises = [];
     let citiesData = [];
-    locationList.forEach(loc => {
-      promises.push(
-        axios("https://api.openweathermap.org/data/2.5/onecall?units=" + units + "&lat=" + loc.lat + "&lon=" + loc.lon + "&exclude=hourly,minutely,daily&appid=" + weatherApiKey).then( response => {
-          console.log("weather response", response);
-          if(citiesData.length > 0) { citiesData = [...citiesData, response.data]; }
-          else { citiesData = [response.data]; }
-          
-        }).catch( error => {
-          console.error("Error getting city data: ", error);
-        })
-      );
-    });
-    Promise.all(promises).then(() => {console.log("done!"); res.json(citiesData);});
+    db.any('select weather_location.id, weather_location.lat, weather_location.lon, weather_location.location_name, weather_location.location_state, weather_location.location_country, weather_user.weather_units from weather_location join weather_user__weather_location on weather_user__weather_location.weather_location_id = weather_location.id join weather_user on weather_user__weather_location.weather_user_id = weather_user.id where weather_user.username = $1', username)
+      .then(locationList => {
+        let promises = [];
+        locationList.forEach(loc => {
+          promises.push(
+            axios(`https://api.openweathermap.org/data/2.5/onecall?units=${loc.weather_units}&lat=${loc.lat}&lon=${loc.lon}&exclude=hourly,minutely,daily&appid=${OPEN_WEATHER_API_KEY}`).then( response => {
+              if(citiesData.length > 0) { citiesData = [...citiesData, {name: loc, weather: response.data}]; }
+              else { citiesData = [{name: loc, weather: response.data}]; }
+              
+            }).catch( error => {
+              console.error('Error getting city data: ', error);
+            })
+          );
+        });
+        Promise.all(promises).then(() => {console.log('done!'); res.json(citiesData);});
+      })
+      .catch(error => {
+        console.error('locationList db query', error);
+      });
 });
 
 server.listen(PORT, () => { console.log('listening on ', PORT) });
