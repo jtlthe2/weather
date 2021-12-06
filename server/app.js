@@ -25,29 +25,27 @@ const server = https.createServer({key: key, cert: cert }, app);
 
 app.get('/', (req, res) => {
     console.log(req);
-    res.json('seltzer waters');
+    res.json('seltzer');
 });
 
-app.get('/weather', (req, res) => {
-    console.log(req);
-    res.json('seltzer weathers');
-})
-
-// TODO create a user
 // TODO post user
+
 // TODO patch user
+
 // TODO delete user
+
 // TODO patch location list for user
+
 // TODO helper get location list for user
 // TODO helper add location
 
 app.get('/search-for-location', (req, res) => {
     const query = req.query.q;
-    axios("https://api.openweathermap.org/geo/1.0/direct?q=" + query + "&limit=10&appid=" + weatherApiKey).then(geoRes => {
-        console.log("geo response", geoRes);
-        res.json(geoRes.data);
-    }).catch( geoError => {
-        console.error("Error getting city data: ", geoError);
+    axios("https://api.openweathermap.org/geo/1.0/direct?q=" + query + "&limit=10&appid=" + weatherApiKey).then(response => {
+        console.log("geo response", response);
+        res.json(response.data);
+    }).catch( error => {
+        console.error("Error getting city data: ", error);
     });
 });
 
