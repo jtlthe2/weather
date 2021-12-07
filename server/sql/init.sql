@@ -62,7 +62,8 @@ insert into weather_user__weather_location (weather_user_id, weather_location_id
 );
 
 drop function if exists get_id_for_weather_user_or_create_weather_user(text) cascade;
-create function get_id_for_weather_user_or_create_weather_user(uname text)
+drop function if exists get_weather_user_or_create_weather_user(text) cascade;
+create function get_weather_user_or_create_weather_user(uname text)
 returns weather_user 
 language plpgsql
 as 
@@ -77,7 +78,7 @@ begin
     return v_user;
 end
 $$;
-comment on function get_id_for_weather_user_or_create_weather_user(text) is 'Ether returns the weather_user with the given username or creates a user with the username (and returns that).';
+comment on function get_weather_user_or_create_weather_user(text) is 'Ether returns the weather_user with the given username or creates a user with the username (and returns that).';
 
 -- TODO get_weather_locations_for_weather_user
 -- TODO get_id_for_weather_location_or_create_weather_location
