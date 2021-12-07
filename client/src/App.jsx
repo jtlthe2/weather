@@ -100,16 +100,13 @@ function App() {
         {weatherForCities}
       </section>
 
-      <button className={"sticky bottom-5 left-5 z-30 h-20 w-20 bg-blue-900 transition-all transform duration-500 ease-in-out bg-opacity-90 hover:bg-opacity-100 hover:scale-125 rounded-full font-extrabold shadow-xl text-white text-4xl text-center"} onClick={() => showAddLocation()}>+</button>
+      <button className={"sticky bottom-5 left-5 z-30 h-20 w-20 bg-blue-900 transition-all transform duration-500 ease-in-out bg-opacity-90 hover:bg-opacity-100 hover:scale-110 rounded-full font-extrabold shadow-lg hover:shadow-2xl text-white text-4xl text-center"} onClick={() => showAddLocation()}>+</button>
 
       <Modal show={show} onHide={hideAddLocation}>
         <ModalHeader>Add Location</ModalHeader>
         
         <ModalBody>
-          <select>
-            <option>Cool</option>
-            <option>Neat</option>
-          </select>
+          
         </ModalBody>
 
         <ModalFooter>

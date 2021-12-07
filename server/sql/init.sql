@@ -50,18 +50,17 @@ create index user_list_item_weather_user_id_idx on weather_user__weather_locatio
 create index user_list_item_weather_location_id_idx on weather_user__weather_location (weather_location_id);
 
 insert into weather_user (username) values ('jtlthe2');
-insert into weather_location (location_name, location_country, lat, lon) values ('London', 'GB', 51.5085, -0.1257);
+insert into weather_location (location_name, location_country, lat, lon) values ('Tokyo', 'JP', 35.6895, 139.6917);
 insert into weather_location (location_name, location_state, location_country, lat, lon) values ('Lexington', 'KY', 'US', 37.9887, -84.4777);
 insert into weather_user__weather_location (weather_user_id, weather_location_id) values (
     (select id from weather_user where username = 'jtlthe2'),
-    (select id from weather_location where location_name = 'London' and location_country = 'GB')
+    (select id from weather_location where location_name = 'Tokyo' and location_country = 'JP')
 );
 insert into weather_user__weather_location (weather_user_id, weather_location_id) values (
     (select id from weather_user where username = 'jtlthe2'),
     (select id from weather_location where location_name = 'Lexington' and location_state = 'KY' and location_country = 'US')
 );
 
-drop function if exists get_id_for_weather_user_or_create_weather_user(text) cascade;
 drop function if exists get_weather_user_or_create_weather_user(text) cascade;
 create function get_weather_user_or_create_weather_user(uname text)
 returns weather_user 
@@ -80,6 +79,79 @@ end
 $$;
 comment on function get_weather_user_or_create_weather_user(text) is 'Ether returns the weather_user with the given username or creates a user with the username (and returns that).';
 
--- TODO get_weather_locations_for_weather_user
--- TODO get_id_for_weather_location_or_create_weather_location
--- TODO add_location_to_weather_user_list
+drop function if exists get_weather_locations_for_weather_user(text) cascade;
+create function get_weather_locations_for_weather_user(uname text)
+returns setof weather_location
+language plpgsql
+stable
+as
+$$
+begin
+    return query select weather_location.*
+        from weather_location 
+            join weather_user__weather_location on weather_user__weather_location.weather_location_id = weather_location.id 
+            join weather_user on weather_user__weather_location.weather_user_id = weather_user.id 
+        where weather_user.username = uname;
+end
+$$;
+comment on function get_weather_locations_for_weather_user(text) is 'Returns the list of weather locations (and their units) associated with a user (this can be empty).';
+
+drop function if exists get_weather_location_or_create_weather_location(text, text, double precision, double precision, text) cascade;
+create function get_weather_location_or_create_weather_location(l_name text, l_country text, l_lat double precision, l_lon double precision, l_state text default null)
+returns weather_location 
+language plpgsql
+as 
+$$
+declare
+    v_location weather_location;
+begin
+    if l_state is null then
+        select * into v_location from weather_location where location_name = l_name and location_country = l_country;
+        if not found then
+            insert into weather_location 
+            (lat, lon, location_name, location_country) 
+            values (l_lat, l_lon, l_name, l_country) 
+            returning * into v_location;
+        end if;
+    else 
+        select * into v_location from weather_location where location_name = l_name and location_state = l_state and location_country = l_country;
+        if not found then
+            insert into weather_location 
+            (lat, lon, location_name, location_state, location_country) 
+            values (l_lat, l_lon, l_name, l_state, l_country) 
+            returning * into v_location;
+        end if;
+    end if;
+    
+    return v_location;
+end
+$$;
+comment on function get_weather_location_or_create_weather_location(text, text, double precision, double precision, text) is 'Ether returns the weather_location with the given info or creates a weather_location with the info (and returns that).';
+
+drop function if exists add_location_to_weather_user_list(text, text, text, double precision, double precision, text) cascade;
+create function add_location_to_weather_user_list(uname text, l_name text, l_country text, l_lat double precision, l_lon double precision, l_state text default null)
+returns weather_location
+language plpgsql
+as
+$$
+declare
+    v_user weather_user;
+    v_location weather_location;
+begin
+    select * into v_user from weather_user where username = uname;
+
+    -- check this first so we don't add a location if the user doesn't exist.
+    if not found then
+        raise exception 'username not found in add_location_to_weather_user_list';
+    end if;
+
+    v_location := get_weather_location_or_create_weather_location(l_name, l_country, l_lat, l_lon, l_state);
+
+    insert into weather_user__weather_location 
+    (weather_user_id, weather_location_id) 
+    values (v_user.id, v_location.id);
+
+    return v_location;
+end
+$$;
+comment on function add_location_to_weather_user_list(text, text, text, double precision, double precision, text) is 'Add a location to a users list of locations. If the user does not exist, an error will be raised. If that location does not exist, it will get created.';
