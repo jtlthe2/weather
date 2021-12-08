@@ -6,9 +6,11 @@ module.exports = {
   },
   variants: {
     extend: {
-      transitionTimingFunction: ['hover', 'focus'],
-      padding: ['hover'],
-      borderRadius: ['hover']
+      transitionTimingFunction: ['hover', 'focus', 'active'],
+      padding: ['hover', 'focus', 'active'],
+      borderRadius: ['hover', 'focus', 'active'],
+      scale: ['hover', 'focus', 'active'],
+      outline: ['hover', 'focus', 'active']
     },
   },
   plugins: [],

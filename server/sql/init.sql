@@ -155,3 +155,26 @@ begin
 end
 $$;
 comment on function add_location_to_weather_user_list(text, text, text, double precision, double precision, text) is 'Add a location to a users list of locations. If the user does not exist, an error will be raised. If that location does not exist, it will get created.';
+
+drop function if exists remove_location_from_weather_user_list(text, uuid) cascade;
+create function remove_location_from_weather_user_list(uname text, l_id uuid)
+returns void
+language plpgsql
+as
+$$
+declare
+    v_user weather_user;
+begin
+    select * into v_user from weather_user where username = uname;
+
+    -- check this first so we don't add a location if the user doesn't exist.
+    if not found then
+        raise exception 'username not found in remove_location_from_weather_user_list';
+    end if;
+
+    delete from weather_user__weather_location
+    where weather_user_id = v_user.id and weather_location_id = l_id;
+
+end
+$$;
+comment on function remove_location_from_weather_user_list(text, uuid) is 'Remove the location with the given id from the user''s list with the given username.';
