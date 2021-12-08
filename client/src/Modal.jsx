@@ -2,7 +2,7 @@ import React from 'react'
 
 export function ModalHeader(props) {
     return (
-        <div className={"font-extrabold mb-5 text-right p-10 text-xl bg-black text-white"}>
+        <div className={"font-extrabold mb-5 text-right p-10 text-xl bg-blue-900 text-white"}>
             {props.children}
         </div>
     )
