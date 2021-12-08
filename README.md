@@ -42,7 +42,7 @@ Get an api key from [https://openweathermap.org/](https://openweathermap.org/), 
 
 ### Generate ssl certs
 
- [generate ssl certs](https://medium.com/@nitinpatel_20236/how-to-create-an-https-server-on-localhost-using-express-366435d61f28)
+ Still in the in the `server` directory, [generate ssl certs](https://medium.com/@nitinpatel_20236/how-to-create-an-https-server-on-localhost-using-express-366435d61f28).
 
 `openssl req -x509 -newkey rsa:2048 -keyout keytmp.pem -out cert.pem -days 365`
 
