@@ -1,17 +1,19 @@
 import React from 'react'
 import WeatherCondition from './WeatherCondition'
 
-function getTimeString(timeEpochUTC){
-  const time = new Date(timeEpochUTC * 1000).toTimeString().split(' ')[0];
-  const hours = time.split(':');
-  let timeAMPM = '';
-  if (hours[0] >= 12) {;
-    timeAMPM = hours[0] == 12 ? `${time} PM` : `${hours[0] - 12}:${hours[1]}:${hours[2]} PM`;
+function getTimeString(timeEpochUTC, offset){
+  const date = new Date(timeEpochUTC * 1000);
+  const localeTime = date.toLocaleTimeString();
+  const localTimeZoneOffset = date.getTimezoneOffset();
+  console.log(localTimeZoneOffset, offset);
+  if(offset === localTimeZoneOffset * -60) {
+    return localeTime;
   }
   else {
-    timeAMPM = hours[0] == 0 ? `12:${hours[1]}:${hours[2]} AM` :  `${time} AM`;
+    const timezone = date.toTimeString().split('(')[1].split(')')[0];
+    const nonLocaleTime = new Date(timeEpochUTC * 1000 + offset * 1000 + localTimeZoneOffset * 60000).toLocaleTimeString();
+    return `${nonLocaleTime} (or ${localeTime} ${timezone})`
   }
-  return timeAMPM;
 }
 
 export default function WeatherForCity(props) {
@@ -31,7 +33,7 @@ export default function WeatherForCity(props) {
   }
 
     return (
-        <div className={"h-1/2 grid grid-cols-2 md:grid-cols-4 justify-items-stretch border-8 rounded-md mx-8 my-5 transform transition-all duration-700 ease-in-out shadow-sm hover:shadow-2xl border-gray-600 hover:border-gray-700 bg-gray-600 hover:bg-gray-700"}>
+        <div className={"h-1/2 grid grid-cols-2 md:grid-cols-4 justify-items-stretch border-8 rounded-md mx-0 md:mx-8 my-5 transform transition-all duration-700 ease-in-out shadow-sm hover:shadow-2xl border-gray-600 hover:border-gray-700 bg-gray-600 hover:bg-gray-700"}>
           {
             nameData.id !== 'current_location'
             ?
@@ -67,8 +69,8 @@ export default function WeatherForCity(props) {
 
             <section className={"text-lg bg-white p-2"}>
               {/* TODO make these look better */}
-                <div>Sunrise: {getTimeString(weatherData.sunrise)}</div>
-                <div>Sunset: {getTimeString(weatherData.sunset)}</div>
+                <div>Sunrise: {getTimeString(weatherData.sunrise, props.cityData.weather.timezone_offset)}</div>
+                <div>Sunset: {getTimeString(weatherData.sunset, props.cityData.weather.timezone_offset)}</div>
             </section>
 
             <section className={"bg-white p-2"}>
