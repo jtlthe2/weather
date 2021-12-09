@@ -7,7 +7,7 @@ const fs = require('fs');
 
 require('dotenv').config();
 
-const SERVER_PORT = process.env.SERVER_PORT;
+const SERVER_PORT = process.env.SERVER_PORT || 8020;
 const OPEN_WEATHER_API_KEY = process.env.OPEN_WEATHER_API_KEY;
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
@@ -15,8 +15,8 @@ const DB_NAME = process.env.DB_NAME;
 const DB_PORT = process.env.DB_PORT;
 const DB_HOST = process.env.DB_HOST;
 const REACT_APP_URL = process.env.REACT_APP_URL;
-const KEY = fs.readFileSync('./key.pem');
-const CERT = fs.readFileSync('./cert.pem');
+const KEY = fs.readFileSync(`${__dirname}/key.pem`);
+const CERT = fs.readFileSync(`${__dirname}/cert.pem`);
 
 
 const app = express();
@@ -28,11 +28,11 @@ app.use(cors({
 
 const server = https.createServer({key: KEY, cert: CERT }, app);
 
-app.get('/', (req, res) => {
+app.get('/api/v1', (req, res) => {
     res.json('ˁ˚ᴥ˚ˀ');
 });
 
-app.post('/user', (req, res) => {
+app.post('/api/v1/user', (req, res) => {
   const username = req.query.username;
   db.func('get_weather_user_or_create_weather_user', [username])
   .then(data =>{
@@ -43,7 +43,7 @@ app.post('/user', (req, res) => {
   })
 });
 
-app.post('/add-location-to-list', (req, res) => {
+app.post('/api/v1/add-location-to-list', (req, res) => {
   const username = req.query.username;
   const loc_name = req.query.name;
   const loc_country = req.query.country;
@@ -60,7 +60,7 @@ app.post('/add-location-to-list', (req, res) => {
   })
 });
 
-app.delete('/remove-location-from-list', (req, res) => {
+app.delete('/api/v1/remove-location-from-list', (req, res) => {
   const username = req.query.username;
   const loc_id = req.query.loc_id;
   db.func('remove_location_from_weather_user_list', [username, loc_id])
@@ -72,7 +72,7 @@ app.delete('/remove-location-from-list', (req, res) => {
   })
 });
 
-app.get('/search-for-location', (req, res) => {
+app.get('/api/v1/search-for-location', (req, res) => {
     const query = req.query.q;
     axios(`https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=20&appid=${OPEN_WEATHER_API_KEY}`).then(response => {
         console.log('geo response', response);
@@ -82,7 +82,7 @@ app.get('/search-for-location', (req, res) => {
     });
 });
 
-app.get('/weather-for-current-location', (req, res) => {
+app.get('/api/v1/weather-for-current-location', (req, res) => {
   const units = req.query.units;
   console.log(req.query);
   axios(`https://api.openweathermap.org/data/2.5/onecall?units=${units}&lat=${req.query.lat}&lon=${req.query.lon}&exclude=hourly,minutely,daily&appid=${OPEN_WEATHER_API_KEY}`).then( response => {
@@ -102,7 +102,7 @@ app.get('/weather-for-current-location', (req, res) => {
     })
 })
 
-app.get('/weather-for-locations', (req, res) => {
+app.get('/api/v1/weather-for-locations', (req, res) => {
     const username = req.query.username;
     const units = req.query.units;
     let citiesData = [];
@@ -126,7 +126,7 @@ app.get('/weather-for-locations', (req, res) => {
       });
 });
 
-app.get('/locations', (req, res) => {
+app.get('/api/v1/locations', (req, res) => {
   const username = req.query.username;
   db.func('get_weather_locations_for_weather_user', [username])
     .then(locationList => {

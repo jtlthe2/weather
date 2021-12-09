@@ -20,13 +20,18 @@ function App() {
   const usernameRef = useRef(null);
   const searchLocationRef = useRef(null);
 
+  const baseURL = process.env.NODE_ENV === 'production' ? "/api/v1" : "https://localhost:8020/api/v1"
+  const axiosInstance = axios.create({
+    baseURL
+  })
+
   useEffect( () => {
     setLoading(true);
     const userInLocalStorage = localStorage.getItem("user");
     if(userInLocalStorage) {
       const userParsed = JSON.parse(userInLocalStorage);
       setUser(userParsed);
-      axios(`https://localhost:8020/locations?username=${userParsed.username}`)
+      axiosInstance.get(`locations?username=${userParsed.username}`)
       .then(res => {
         setLocationList(res.data);
       })
@@ -47,7 +52,7 @@ function App() {
     // Current Location
     if("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(position => {
-        axios(`https://localhost:8020/weather-for-current-location?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=${user.weather_units}`)
+        axiosInstance.get(`/weather-for-current-location?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=${user.weather_units}`)
         .then(res => {
           setCurrentLocation(res.data);
         })
@@ -63,7 +68,7 @@ function App() {
     }
 
     // User's Location List
-    axios(`https://localhost:8020/weather-for-locations?username=${user.username}&units=${user.weather_units}`)
+    axiosInstance.get(`/weather-for-locations?username=${user.username}&units=${user.weather_units}`)
     .then(res => {
       setCitiesData(res.data);
       setLoading(false);
@@ -93,7 +98,7 @@ function App() {
   }
 
   function login() {
-    axios.post(`https://localhost:8020/user?username=${userLogin}`)
+    axiosInstance.post(`/user?username=${userLogin}`)
       .then(response => {
         setUser(response.data);
         localStorage.setItem("user", JSON.stringify(response.data));
@@ -114,7 +119,9 @@ function App() {
   }
 
   function locationSearchQuery() {
-    axios(`https://localhost:8020/search-for-location?q=${locationSearch.replace(" ", "%20")}`)
+    let q = locationSearch.replace(", ", ",");
+    q = q.replace(" ", "%20");
+    axiosInstance.get(`/search-for-location?q=${q}`)
     .then(res => {
       setLocationSearchList(res.data);
     })
@@ -135,7 +142,7 @@ function App() {
   }
 
   function addLocationToList(location) {
-    axios.post(`https://localhost:8020/add-location-to-list?username=${user.username}&name=${location.name}&country=${location.country}&lat=${location.lat}&lon=${location.lon}${location.state ? "&state=" + location.state : ""}`)
+    axiosInstance.post(`/add-location-to-list?username=${user.username}&name=${location.name}&country=${location.country}&lat=${location.lat}&lon=${location.lon}${location.state ? "&state=" + location.state : ""}`)
     .then(response => {   
       if(citiesData.length > 0) {
         setLocationList([...locationList, response.data]);
@@ -152,7 +159,7 @@ function App() {
 
   function removeLocationFromList(location) {
     console.log("removeLocationFromList", location)
-    axios.delete(`https://localhost:8020/remove-location-from-list?username=${user.username}&loc_id=${location.name.id}`)
+    axiosInstance.delete(`/remove-location-from-list?username=${user.username}&loc_id=${location.name.id}`)
     .then(() => {
       setLocationList(locationList.filter((loc) => {return loc.id !== location.name.id}));
     })
