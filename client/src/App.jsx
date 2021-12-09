@@ -118,6 +118,7 @@ function App() {
     localStorage.clear();
   }
 
+  //TODO check if state code and append ",US" to q.
   function locationSearchQuery() {
     let q = locationSearch.replace(", ", ",");
     q = q.replace(" ", "%20");
@@ -231,7 +232,7 @@ function App() {
       <LoadingScreen></LoadingScreen>
       :
       <div disabled>
-        <section className={"realtive flex flex-col mx-20"}>
+        <section className={"realtive flex flex-col mx-5 md:mx-20"}>
           {weatherForCurrentLocation}
           {weatherForCities}
         </section>

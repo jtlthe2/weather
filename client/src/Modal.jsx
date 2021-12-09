@@ -34,7 +34,7 @@ export default function Modal(props) {
     }
     return (
         <div show={props.show.toString()} className={containerClassName}>
-            <div className={"relative top-1/4 -right-1/4 w-1/2 h-1/2 overflow-auto bg-white shadow-lg rounded-md border-4 border-white"}>
+            <div className={"relative top-20 -right-14 md:top-1/4 md:-right-1/4 w-3/4 h-3/4 md:w-1/2 md:h-1/2 overflow-auto bg-white shadow-lg rounded-md border-4 border-white"}>
                 {props.children}
             </div>
            
