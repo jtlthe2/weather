@@ -1,4 +1,4 @@
-# weather
+# weather app [check it out here](https://weather.jamie.games/)
 This is a weather app built with postgres, node, react, and styled with tailwind.css. The weather data is pulled from the https://openweathermap.org/ api.
 
 ## Running instrucitons
